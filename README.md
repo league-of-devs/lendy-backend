@@ -6,6 +6,7 @@
 - ExpressJS
 - MomentJS
 - MySQL
+- BCrypt
 
 ### :fire: Progress
 
