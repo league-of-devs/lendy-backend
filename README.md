@@ -18,8 +18,8 @@
 
 ### :coffee: Credits
 
-- [@league-of-devs](https://github.com/league-of-devs)
-- [@infobros2000](https://github.com/infobros2000)
+| [<img src="https://avatars3.githubusercontent.com/u/60491076?s=400&v=4" width=115><br><sub>@leagueofdevs</sub>](https://github.com/league-of-devs) | [<img src="https://avatars3.githubusercontent.com/u/13054390?s=400&v=4" width=115><br><sub>@infobros2000</sub>](https://github.com/infobros2000) |
+| :---: | :---: |
 
 ### :v: Contribution
 
