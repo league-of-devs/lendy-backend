@@ -13,6 +13,12 @@
 - [ ] Users CRUD
 - [ ] Authentication middleware
 
+### :page_facing_up: About
+
+- Sign-Up
+  - Email validation
+  - Cpf validation
+
 ### :question: Questions
 
 - None
