@@ -37,6 +37,11 @@ var bcrypt = require('bcrypt');
 require('dotenv').config();
 
 /*
+	Main variables
+*/
+var defaultstars = 2;	//Default stars on register
+
+/*
 	     _                    
 	    / \     _ __    _ __  
 	   / _ \   | '_ \  | '_ \ 
@@ -83,35 +88,44 @@ app.post('/user/register', function (req, res)
 	var data = req.body;
 
 	//Get variables
-	var email = data.email;
-	var name = data.name;
+	var email = (data.email != null ? data.email : "");
+	var name = (data.name != null ? data.name : "");
 	var password = (data.password != null ? data.password : "");
-	var type = data.type;
+	var type = (data.type != null ? data.type : "");
 	var cpf = (data.cpf != null ? data.cpf : "");
+
+	var regex = /^[a-zA-Z ]{2,30}$/;
+
+
+	if(regex.test(name))
+	{
+		res.status(400).json({ result: 'error', error: "invalid_name"});
+		return;
+	}
 
 	//Check data
 	if(!validateEmail(email))
 	{
-		res.status(400).json({ result: 'error',error: "invalid_email"});
+		res.status(400).json({ result: 'error', error: "invalid_email"});
 		return;
 	}
 
 	if(!validateCpf(cpf))
 	{
-		res.status(400).json({ result: 'error',error: "invalid_cpf"});
+		res.status(400).json({ result: 'error', error: "invalid_cpf"});
 		return;
 	}
 
 	if(password.length < 8)
 	{
-		res.status(400).json({ result: 'error',error: "short_password"});
+		res.status(400).json({ result: 'error', error: "short_password"});
 		return;
 	}
 
 
 	if(password.length > 24)
 	{
-		res.status(400).json({ result: 'error',error: "long_password"});
+		res.status(400).json({ result: 'error', error: "long_password"});
 		return;
 	}
 
@@ -119,7 +133,7 @@ app.post('/user/register', function (req, res)
 	bcrypt.hash(password, 10, function(err, hash) 
 	{
 		//Do query
-		con.query(sql("INSERT INTO user (email,name,password,type,cpf,date_creation) VALUES ('$email','$name','$hash','$type','$cpf',NOW())",{email: email,name: name,hash: hash,type: type,cpf: cpf}), function (err, result) 
+		con.query(sql("INSERT INTO user (email,name,password,type,cpf,date_creation,status,stars) VALUES ('$email','$name','$hash','$type','$cpf',NOW(),1,$defaultstars)",{email: email,name: name,hash: hash,type: type,cpf: cpf,defaultstars: defaultstars}), function (err, result) 
 		{
 			if(err)
 			{
@@ -157,6 +171,159 @@ app.post('/user/register', function (req, res)
 		});
 	});
 });
+
+/*
+	Login
+*/
+app.post('/user/login', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	//Get variables
+	var email = (data.email != null ? data.email : "");
+	var password = (data.password != null ? data.password : "");
+
+	//Do query
+	con.query(sql("SELECT id,password,status FROM user WHERE email = '$email'",{email: email}), function (err, result, fields) 
+	{
+		if(result.length > 0)
+		{
+			if(result[0].status == "0")
+			{
+				res.status(400).json({ result: 'error', error: "account_disabled"});
+				return;
+			}
+
+			bcrypt.compare(password, result[0].password, function(err, result) {
+			    if(result)
+			    {
+			    	var token = generateToken(30);
+
+			    	con.query(sql("UPDATE user SET token= '$token',date_lastlogin= NOW() WHERE email = '$email'",{email: email,token: token}), function (err, result, fields)
+			    	{
+			    		if(err)
+			    		{
+							res.status(500).json({ result: 'error', error: "cant_login"});
+							return;
+			    		}
+			    		else
+			    		{
+							res.status(200).json({ result: 'success', token: token});
+							return;
+			    		}
+			    	});
+			    }
+			    else
+			    {
+			    	res.status(400).json({ result: 'error', error: "wrong_password"});
+					return;
+			    }
+			});
+		}
+		else
+		{
+			res.status(400).json({ result: 'error', error: "invalid_email"});
+			return;
+		}
+	});
+});
+
+/*
+	Get user profile info
+*/
+app.post('/user/profileinfo', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	//Get variables
+	var email = (data.email != null ? data.email : "");
+
+	//Do query
+	con.query(sql("SELECT name,date_creation,country,city,stars FROM user WHERE email = '$email'",{email: email}), function (err, result, fields) 
+	{
+		if(result.length > 0)
+		{
+			var jsDate = new Date(Date.parse((result[0].date_creation + "").replace(/[-]/g,'/')));
+			result[0].date_creation = jsDate.toUTCString();
+
+			//TO-DO: Get number of lends
+			res.status(400).json({ result: 'success', data: result[0]});
+			return;
+		}
+		else
+		{
+			res.status(400).json({ result: 'error', error: "invalid_user"});
+			return;
+		}
+	});
+});
+
+
+/*
+	Set user address
+*/
+
+/*
+	Get user simple info
+	TO-DO in future
+*/
+/*
+app.post('/user/simpleinfo', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	//Get variables
+	var email = (data.email != null ? data.email : "");
+
+	//Do query
+	con.query(sql("SELECT name,date_creation,country,city,stars FROM user WHERE email = '$email'",{email: email}), function (err, result, fields) 
+	{
+		if(result.length > 0)
+		{
+			res.status(400).json({ result: 'success', data: result[0]});
+			return;
+		}
+		else
+		{
+			res.status(400).json({ result: 'error', error: "invalid_user"});
+			return;
+		}
+	});
+});
+*/
+
+/*
+	Get user profile image
+	TO-DO in future
+*/
+/*
+app.post('/user/profileimage', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	//Get variables
+	var email = (data.email != null ? data.email : "");
+
+	con.query(sql("SELECT profileimage FROM user WHERE email = '$email'",{email: email}), function (err, result, fields) 
+	{
+		if(result.length > 0)
+		{
+			res.status(400).json({ result: 'success', data: result[0].profileimage});
+			return;
+		}
+		else
+		{
+			res.status(400).json({ result: 'error', error: "invalid_user"});
+			return;
+		}
+	});
+});
+*/
+
 
 /*
 	  ___           _   _     _           _   _                 _     _                 
@@ -219,6 +386,21 @@ function validateEmail(email)
 {
     var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
     return re.test(String(email).toLowerCase());
+}
+
+/*
+	Generate token
+*/
+function generateToken(length) 
+{
+	var result           = '';
+	var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	var charactersLength = characters.length;
+	for ( var i = 0; i < length; i++ ) 
+	{
+		result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+	return result;
 }
 
 /*
