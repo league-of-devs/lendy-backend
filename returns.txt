@@ -1,0 +1,48 @@
+- /user/register (email,name,password,type,cpf)
+	- Default: (201)
+		:{ result: 'success' }
+
+	- Error:	
+		- Invalid name (400)
+			:{ result: 'error', error: "invalid_name"}
+
+		- Invalid email (400)
+			:{ result: 'error', error: "invalid_email"}
+
+		- Invalid CPF (400)
+			:{ result: 'error', error: "invalid_cpf"}
+
+		- Short Password (400)
+			:{ result: 'error', error: "short_password"}
+
+		- Long Password (400)
+			:{ result: 'error', error: "long_password"}
+
+		- Email already in use (400)
+			:{ result: 'error', error: "email_in_use"}
+
+		- CPF already in use (400)
+			:{ result: 'error', error: "cpf_in_use"}
+
+		- Generic error (400)
+			:{ result: 'error', error: err.code}
+
+- /user/login (email,password)
+	- Default: (200)
+		- :{ result: 'success', token: token}
+
+	- Error:
+		- Disabled account (400)		
+			:{ result: 'error', error: "account_disabled"}
+
+		- Internal Login Error (500)
+			:{ result: 'error', error: "cant_login"}
+
+		- Wrong password (400)
+			:{ result: 'error', error: "wrong_password"}
+
+		- Invalid email (400)
+			:{ result: 'error', error: "invalid_email"}
+
+- /user/profileinfo (email)
+	- Default: (200)
