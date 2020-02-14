@@ -35,11 +35,24 @@ var mysql = require('mysql');
 var moment = require('moment');
 var bcrypt = require('bcrypt');
 require('dotenv').config();
+var nodemailer = require('nodemailer');
 
 /*
 	Main variables
 */
 var defaultstars = 2;	//Default stars on register
+var mailtransporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'XXXXX@XXXXXXXXX',
+    pass: 'XXXXXXXXX'
+  },
+  secure: false,
+  tls: {
+        // do not fail on invalid certs
+        rejectUnauthorized: false
+    },
+});
 
 /*
 	     _                    
@@ -91,7 +104,7 @@ app.post('/user/register', function (req, res)
 	var email = (data.email != null ? data.email : "");
 	var name = (data.name != null ? data.name : "");
 	var password = (data.password != null ? data.password : "");
-	var type = (data.type != null ? data.type : "");
+	var type = 0; //(data.type != null ? data.type : "");
 	var cpf = (data.cpf != null ? data.cpf : "");
 
 	var regex = /^[a-zA-Z ]{2,30}$/;
@@ -133,12 +146,12 @@ app.post('/user/register', function (req, res)
 	bcrypt.hash(password, 10, function(err, hash) 
 	{
 		//Do query
-		con.query(sql("INSERT INTO user (email,name,password,type,cpf,date_creation,status,stars) VALUES ('$email','$name','$hash','$type','$cpf',NOW(),1,$defaultstars)",{email: email,name: name,hash: hash,type: type,cpf: cpf,defaultstars: defaultstars}), function (err, result) 
+		con.query(sql("INSERT INTO user (email,name,type,password,cpf,created_at,status,rating) VALUES ('$email','$name',$type,'$hash','$cpf',NOW(),1,$defaultstars)",{email: email,name: name,hash: hash,type: type,cpf: cpf,defaultstars: defaultstars}), function (err, result) 
 		{
 			if(err)
 			{
 				
-				con.query(sql("SELECT id FROM user WHERE email = '$email'",{email: email}), function (err, result, fields) 
+				con.query(sql("SELECT id FROM user WHERE email = '$email'",{email: email}), function (errb, result, fields) 
 				{
 					if(result.length > 0)
 					{
@@ -147,7 +160,7 @@ app.post('/user/register', function (req, res)
 					}
 					else
 					{
-						con.query(sql("SELECT id FROM user WHERE cpf = '$cpf'",{cpf: cpf}), function (err, result, fields) 
+						con.query(sql("SELECT id FROM user WHERE cpf = '$cpf'",{cpf: cpf}), function (errb, result, fields) 
 						{
 							if(result.length > 0)
 							{
@@ -156,7 +169,7 @@ app.post('/user/register', function (req, res)
 							}
 							else
 							{
-								res.status(400).json({ result: 'error', error: err.code});
+								res.status(400).json({ result: 'error', error: err});
 								return;
 							}
 						});	
@@ -200,7 +213,7 @@ app.post('/user/login', function (req, res)
 			    {
 			    	var token = generateToken(30);
 
-			    	con.query(sql("UPDATE user SET token= '$token',date_lastlogin= NOW() WHERE email = '$email'",{email: email,token: token}), function (err, result, fields)
+			    	con.query(sql("UPDATE user SET token= '$token',last_login = NOW() WHERE email = '$email'",{email: email,token: token}), function (err, result, fields)
 			    	{
 			    		if(err)
 			    		{
@@ -230,8 +243,42 @@ app.post('/user/login', function (req, res)
 });
 
 /*
+	Forgot password
+*/
+app.post('/user/forgotpassword', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	//Get variables
+	var email = (data.email != null ? data.email : "");
+	var token = generateToken(48);
+
+	var mailOptions = 
+	{
+		from: 'oficial.leagueofdev@gmail.com',
+		to: email,
+		subject: 'Solicitação de Redefinição de Senha',
+		text: 'That was easy!'
+	};
+
+	mailtransporter.sendMail(mailOptions, function(error, info)
+	{
+		if (error) 
+		{
+			res.status(400).json({ result: 'error', error: error});
+		} 
+		else 
+		{
+			res.status(200).json({ result: 'success'});
+		}
+	});
+});
+
+/*
 	Get user profile info
 */
+/*
 app.post('/user/profileinfo', function (req, res) 
 {
 	//Get data
@@ -245,6 +292,7 @@ app.post('/user/profileinfo', function (req, res)
 	{
 		if(result.length > 0)
 		{
+			//Format date
 			var jsDate = new Date(Date.parse((result[0].date_creation + "").replace(/[-]/g,'/')));
 			result[0].date_creation = jsDate.toUTCString();
 
@@ -259,10 +307,28 @@ app.post('/user/profileinfo', function (req, res)
 		}
 	});
 });
-
+*/
 
 /*
 	Set user address
+*/
+/*
+app.post('/user/updateaddress', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	//Get variables
+	var token = data.token;
+	var state = (data.state != null ? data.state : "");
+	var city = (data.city != null ? data.city : "");
+	var chunk = (data.chunk != null ? data.chunk : "");
+	var street = (data.stret != null ? data.stret : "");	
+	var number = (data.number != null ? data.number : "");
+	var complement = (data.complement != null ? data.complement : "");
+	var cep = (data.cep != null ? data.cep : "");
+
+});
 */
 
 /*
