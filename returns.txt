@@ -1,48 +1,130 @@
-- /user/register (email,name,password,type,cpf)
-	- Default: (201)
-		:{ result: 'success' }
 
-	- Error:	
-		- Invalid name (400)
-			:{ result: 'error', error: "invalid_name"}
+- User:
+	- POST /user/register:
+		- Input:
+			{
+				"email",
+				"name",
+				"cpf",
+				"password",
+				"cep",
+				"addr_number",
+				"addr_complement",
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_name"}
+			{ result: 'error', error: "invalid_email"}
+			{ result: 'error', error: "invalid_cpf"}
+			{ result: 'error', error: "short_password"}
+			{ result: 'error', error: "long_password"}
+			{ result: 'error', error: "invalid_cep"}
+			{ result: 'error', error: "invalid_address_number"}
+			{ result: 'error', error: "invalid_complement"}
+			{ result: 'error', error: "email_in_use"}
+			{ result: 'error', error: "cpf_in_use"}
+			{ result: 'error', error: ?}
+			
+			{ result: 'success' }
+			
+	- POST /user/login:
+		- Input:
+			{
+				"email",
+				"password",
+			}
+		- Returns:	
+			{ result: 'error', error: "account_disabled"}
+			{ result: 'error', error: "cant_login"}
+			{ result: 'error', error: "wrong_password"}
+			{ result: 'error', error: "invalid_email"}
+			
+			{ result: 'success', token: ?user_token}
+		
+- Request:		
+	- POST /request/create:
+		- Input: [Needs Token]
+			{
+				"value",
+				"fee",
+				"days"
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_token"}
+			{ result: 'error', error: "invalid_value"}
+			{ result: 'error', error: "invalid_fee"}
+			{ result: 'error', error: "invalid_days"}
+			{ result: 'error', error: ?}
+			
+			{ result: 'success', id: ?insert_id}
+			
+	- GET /request/my_requests: [Needs Token]
+		- Input:
+			{
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_token"}
+			{ result: 'error', error: ?}
+			
+			{
+			  "result": "success",
+			  "list": [
+				{
+				  "id": 1,
+				  "active": 1,
+				  "from_user": 29,
+				  "value": 13.54,
+				  "fee": 3,
+				  "days": 10,
+				  "created_at": "Sat, 15 Feb 2020 14:27:33 GMT",
+				  "updated_at": "Sat, 15 Feb 2020 14:27:33 GMT"
+				},
+				...
+				]
+			}
 
-		- Invalid email (400)
-			:{ result: 'error', error: "invalid_email"}
+- Offer:		
+	- POST /offer/create:
+		- Input: [Needs Token]
+			{
+				"value",
+				"fee",
+				"days"
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_token"}
+			{ result: 'error', error: "invalid_value"}
+			{ result: 'error', error: "invalid_fee"}
+			{ result: 'error', error: "invalid_days"}
+			{ result: 'error', error: "offers_limit_reached"}
+			{ result: 'error', error: ?}
+			
+			{ result: 'success', id: ?insert_id}
+			
+	- GET /offer/my_offers: [Needs Token]
+		- Input:
+			{
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_token"}
+			{ result: 'error', error: ?}
+			
+			{
+			  "result": "success",
+			  "list": [
+				{
+				  "id": 1,
+				  "active": 1,
+				  "from_user": 29,
+				  "value": 13.54,
+				  "fee": 3,
+				  "days": 10,
+				  "created_at": "Sat, 15 Feb 2020 14:27:33 GMT",
+				  "updated_at": "Sat, 15 Feb 2020 14:27:33 GMT"
+				},
+				...
+				]
+			}			
 
-		- Invalid CPF (400)
-			:{ result: 'error', error: "invalid_cpf"}
-
-		- Short Password (400)
-			:{ result: 'error', error: "short_password"}
-
-		- Long Password (400)
-			:{ result: 'error', error: "long_password"}
-
-		- Email already in use (400)
-			:{ result: 'error', error: "email_in_use"}
-
-		- CPF already in use (400)
-			:{ result: 'error', error: "cpf_in_use"}
-
-		- Generic error (400)
-			:{ result: 'error', error: err.code}
-
-- /user/login (email,password)
-	- Default: (200)
-		- :{ result: 'success', token: token}
-
-	- Error:
-		- Disabled account (400)		
-			:{ result: 'error', error: "account_disabled"}
-
-		- Internal Login Error (500)
-			:{ result: 'error', error: "cant_login"}
-
-		- Wrong password (400)
-			:{ result: 'error', error: "wrong_password"}
-
-		- Invalid email (400)
-			:{ result: 'error', error: "invalid_email"}
-
-- /user/profileinfo (email)
-	- Default: (200)
+	
+		
+			

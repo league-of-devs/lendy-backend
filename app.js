@@ -36,6 +36,7 @@ var moment = require('moment');
 var bcrypt = require('bcrypt');
 require('dotenv').config();
 var nodemailer = require('nodemailer');
+var request = require("request")
 
 /*
 	Main variables
@@ -77,38 +78,82 @@ app.use((req, res, next) =>
 	var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
 	log(ip + " requesting " + req.path);
 
-	return next()
-})
+	//Validate token
+	if(req.path != "/user/register" && req.path != "user/login")
+	{
+		var token = req.headers.get('authorization');
 
+		if(token == "")
+		{
+			res.status(401).json({ result: 'error', error: "invalid_token"});
+			return;
+		}
 
-/*
-	Teste Request
-*/
-app.post('/', function (req, res) 
-{
-	var data = req.query;
+		con.query(sql("SELECT id,max_offers FROM user WHERE token = '$token'",{token: token}), function (err, result) 
+		{
+			if(err)
+			{
+				res.status(401).json({ result: 'error', error: "internal_server_error"});
+				return;
+			}
 
-	
-	log("teste");
+			if(result.length == 0)
+			{
+				res.status(401).json({ result: 'error', error: "invalid_token"});
+				return;
+			}
+			else
+			{
+				req.body.user_id = result[0].id + "";
+				req.body.max_offers = result[0].max_offers + "";
+				
+				return next();
+			}
+		});
+	}
+
+	return;
 });
 
+/*      _   _                     
+  _    | | | |  ___    ___   _ __ 
+ (_)   | | | | / __|  / _ \ | '__|
+  _    | |_| | \__ \ |  __/ | |   
+ (_)    \___/  |___/  \___| |_|   
+
+*/
+
 /*
-	Register
+	Register User
+	Falta: tratar as variáveis de endereço
+	https://viacep.com.br/ws/00000000/json/
 */
 app.post('/user/register', function (req, res) 
 {
 	//Get data
 	var data = req.body;
 
-	//Get variables
-	var email = (data.email != null ? data.email : "");
-	var name = (data.name != null ? data.name : "");
-	var password = (data.password != null ? data.password : "");
-	var type = 0; //(data.type != null ? data.type : "");
-	var cpf = (data.cpf != null ? data.cpf : "");
+	var email = data.get("email");
+	var name = data.get("name"); 
+	var cpf = data.get("cpf");
+	var password = data.get("password");
+	var status = 1;
+	var type = 0;
+
+	var addr_country = "";
+	var addr_state = "";
+	var addr_city = "";
+	var addr_neighborhood = "";
+	var addr_cep = data.get("addr_cep");
+	var addr_street = "";
+	var addr_number = data.get("addr_number");
+	var addr_complement = data.get("addr_complement");
+
+	var rating = 0;
+	var max_offers = 5;
+	var image = "";
 
 	var regex = /^[a-zA-Z ]{2,30}$/;
-
 
 	if(regex.test(name))
 	{
@@ -135,54 +180,90 @@ app.post('/user/register', function (req, res)
 		return;
 	}
 
-
 	if(password.length > 24)
 	{
 		res.status(400).json({ result: 'error', error: "long_password"});
 		return;
 	}
 
-	//Encrypt password
-	bcrypt.hash(password, 10, function(err, hash) 
-	{
-		//Do query
-		con.query(sql("INSERT INTO user (email,name,type,password,cpf,created_at,status,rating) VALUES ('$email','$name',$type,'$hash','$cpf',NOW(),1,$defaultstars)",{email: email,name: name,hash: hash,type: type,cpf: cpf,defaultstars: defaultstars}), function (err, result) 
-		{
-			if(err)
-			{
-				
-				con.query(sql("SELECT id FROM user WHERE email = '$email'",{email: email}), function (errb, result, fields) 
+	request({
+    	url: "https://brasilapi.com.br/api/cep/" + addr_cep ,
+    	json: true
+	}, function (error, response, body) {
+
+	    if (!error && response.statusCode === 200) 
+	    {
+	        if(body.error == null)
+	        {
+	        	addr_country = "Brasil";
+	        	addr_state = body.state;
+	        	addr_street = body.street;
+	        	addr_city = body.city;
+	        	addr_neighborhood = body.neighborhood;
+
+	        	if(isNaN(addr_number) || addr_number == "")
+	        	{
+	        		res.status(400).json({ result: 'error', error: "invalid_address_number"});
+	        		return;
+	        	}
+  
+	        	if(addr_complement > 8)
+	        	{
+	        		res.status(400).json({ result: 'error', error: "invalid_complement"});
+	        		return;
+	        	}
+
+	        	//Encrypt password
+				bcrypt.hash(password, 10, function(err, hash) 
 				{
-					if(result.length > 0)
+					//Do query
+					con.query(sql("INSERT INTO user (email,name,cpf,password,status,type,addr_country,addr_state,addr_city,addr_neighborhood,addr_cep,addr_street,addr_number,addr_complement,rating,image,created_at,updated_at,max_offers) VALUES ('$email','$name','$cpf','$password','$status','$type','$addr_country','$addr_state','$addr_city','$addr_neighborhood','$addr_cep','$addr_street','$addr_number','$addr_complement','$rating','$image',NOW(),NOW(),$max_offers)",{max_offers: max_offers,email: email,name: name,cpf: cpf,password: hash,status: status,type: type,addr_country: addr_country,addr_state: addr_state,addr_city: addr_city,addr_neighborhood: addr_neighborhood,addr_cep: addr_cep,addr_street: addr_street,addr_number: addr_number,addr_complement: addr_complement,rating: rating,image: image}), function (err, result) 
 					{
-						res.status(400).json({ result: 'error', error: "email_in_use"});
-						return;
-					}
-					else
-					{
-						con.query(sql("SELECT id FROM user WHERE cpf = '$cpf'",{cpf: cpf}), function (errb, result, fields) 
+						if(err)
 						{
-							if(result.length > 0)
+							
+							con.query(sql("SELECT id FROM user WHERE email = '$email'",{email: email}), function (errb, result, fields) 
 							{
-								res.status(400).json({ result: 'error', error: "cpf_in_use"});
-								return;
-							}
-							else
-							{
-								res.status(400).json({ result: 'error', error: err});
-								return;
-							}
-						});	
-					}
-				});	
-			}
-			else
-			{			
-				res.status(201).json({ result: 'success' });
-				return;
-			}
-		});
-	});
+								if(result.length > 0)
+								{
+									res.status(400).json({ result: 'error', error: "email_in_use"});
+									return;
+								}
+								else
+								{
+									con.query(sql("SELECT id FROM user WHERE cpf = '$cpf'",{cpf: cpf}), function (errb, result, fields) 
+									{
+										if(result.length > 0)
+										{
+											res.status(400).json({ result: 'error', error: "cpf_in_use"});
+											return;
+										}
+										else
+										{
+											res.status(400).json({ result: 'error', error: err});
+											return;
+										}
+									});	
+								}
+							});	
+						}
+						else
+						{			
+							res.status(201).json({ result: 'success' });
+							return;
+						}
+					});
+				});
+	        }
+	    }
+	    else
+	    {
+	    	res.status(400).json({ result: 'error', error: "invalid_cep"});
+	    	return;
+	    }
+	})
+
+	
 });
 
 /*
@@ -242,154 +323,202 @@ app.post('/user/login', function (req, res)
 	});
 });
 
-/*
-	Forgot password
+/*      ____                                        _   
+  _    |  _ \    ___    __ _   _   _    ___   ___  | |_ 
+ (_)   | |_) |  / _ \  / _` | | | | |  / _ \ / __| | __|
+  _    |  _ <  |  __/ | (_| | | |_| | |  __/ \__ \ | |_ 
+ (_)   |_| \_\  \___|  \__, |  \__,_|  \___| |___/  \__|
+                          |_|                           
 */
-app.post('/user/forgotpassword', function (req, res) 
+
+/*
+ Create a request
+*/
+app.post('/request/create', function (req, res) 
 {
 	//Get data
 	var data = req.body;
 
-	//Get variables
-	var email = (data.email != null ? data.email : "");
-	var token = generateToken(48);
+	var active = 1;
+	
+	var value = data.get("value");
+	var fee = data.get("fee");
+	var days = data.get("days");
 
-	var mailOptions = 
-	{
-		from: 'oficial.leagueofdev@gmail.com',
-		to: email,
-		subject: 'Solicitação de Redefinição de Senha',
-		text: 'That was easy!'
-	};
+	var from_user = data.get("user_id");
 
-	mailtransporter.sendMail(mailOptions, function(error, info)
+	if(value == "" || isNaN(value))
 	{
-		if (error) 
+		res.status(400).json({ result: 'error', error: "invalid_value"});
+		return;
+	}
+
+	if(fee == "" || isNaN(fee))
+	{
+		res.status(400).json({ result: 'error', error: "invalid_fee"});
+		return;
+	}
+
+	if(days == "" || isNaN(days))
+	{
+		res.status(400).json({ result: 'error', error: "invalid_days"});
+		return;
+	}
+
+
+	con.query(sql("INSERT INTO request (active,from_user,value,fee,days,created_at,updated_at) VALUES ('$active','$from_user','$value','$fee','$days',NOW(),NOW()) ",{active: active,from_user: from_user,value: value,fee: fee,days: days}), function (err, result, fields)
+	{
+		if(err)
 		{
-			res.status(400).json({ result: 'error', error: error});
-		} 
-		else 
-		{
-			res.status(200).json({ result: 'success'});
+			res.status(400).json({ result: 'error', error: err.code});
+			return;
+		}
+		else
+		{	
+			res.status(201).json({ result: 'success', id: result.insertId});
+			return;
 		}
 	});
+	
 });
 
 /*
-	Get user profile info
+	List my active requests
 */
-/*
-app.post('/user/profileinfo', function (req, res) 
+app.get('/request/my_requests', function (req, res) 
 {
 	//Get data
 	var data = req.body;
 
-	//Get variables
-	var email = (data.email != null ? data.email : "");
+	var from_user = data.get("user_id");
 
-	//Do query
-	con.query(sql("SELECT name,date_creation,country,city,stars FROM user WHERE email = '$email'",{email: email}), function (err, result, fields) 
+	con.query(sql("SELECT * FROM request WHERE from_user='$from_user' AND active=1 ",{from_user: from_user}), function (err, result, fields)
 	{
-		if(result.length > 0)
+		if(err)
 		{
-			//Format date
-			var jsDate = new Date(Date.parse((result[0].date_creation + "").replace(/[-]/g,'/')));
-			result[0].date_creation = jsDate.toUTCString();
-
-			//TO-DO: Get number of lends
-			res.status(400).json({ result: 'success', data: result[0]});
+			res.status(400).json({ result: 'error', error: err.code});
 			return;
 		}
 		else
 		{
-			res.status(400).json({ result: 'error', error: "invalid_user"});
+			for(var i = 0; i < result.length; i ++)
+			{
+				result[i].created_at = fixDate(result[i].created_at);
+				result[i].updated_at = fixDate(result[i].updated_at);
+			}
+
+			res.status(201).json({ result: 'success', list: result});
 			return;
 		}
 	});
 });
+
+/*       ___     __    __               
+  _     / _ \   / _|  / _|   ___   _ __ 
+ (_)   | | | | | |_  | |_   / _ \ | '__|
+  _    | |_| | |  _| |  _| |  __/ | |   
+ (_)    \___/  |_|   |_|    \___| |_|   
+
 */
 
 /*
-	Set user address
+	Create offer
 */
-/*
-app.post('/user/updateaddress', function (req, res) 
+app.post('/offer/create', function (req, res) 
 {
 	//Get data
 	var data = req.body;
 
-	//Get variables
-	var token = data.token;
-	var state = (data.state != null ? data.state : "");
-	var city = (data.city != null ? data.city : "");
-	var chunk = (data.chunk != null ? data.chunk : "");
-	var street = (data.stret != null ? data.stret : "");	
-	var number = (data.number != null ? data.number : "");
-	var complement = (data.complement != null ? data.complement : "");
-	var cep = (data.cep != null ? data.cep : "");
+	var active = 1;
+	
+	var value = data.get("value");
+	var fee = data.get("fee");
+	var days = data.get("days");
 
-});
-*/
+	var from_user = data.get("user_id");
 
-/*
-	Get user simple info
-	TO-DO in future
-*/
-/*
-app.post('/user/simpleinfo', function (req, res) 
-{
-	//Get data
-	var data = req.body;
-
-	//Get variables
-	var email = (data.email != null ? data.email : "");
-
-	//Do query
-	con.query(sql("SELECT name,date_creation,country,city,stars FROM user WHERE email = '$email'",{email: email}), function (err, result, fields) 
+	if(value == "" || isNaN(value))
 	{
-		if(result.length > 0)
+		res.status(400).json({ result: 'error', error: "invalid_value"});
+		return;
+	}
+
+	if(fee == "" || isNaN(fee))
+	{
+		res.status(400).json({ result: 'error', error: "invalid_fee"});
+		return;
+	}
+
+	if(days == "" || isNaN(days))
+	{
+		res.status(400).json({ result: 'error', error: "invalid_days"});
+		return;
+	}
+
+	//Count active requests of user
+	con.query(sql("SELECT COUNT(id) AS count FROM offer WHERE from_user=$from_user AND active = 1",{from_user: from_user}), function (err, result, fields){
+		
+		if(err)
 		{
-			res.status(400).json({ result: 'success', data: result[0]});
+			res.status(400).json({ result: 'error', error: err.code});
+			return;
+		}
+
+		//Created offers
+		var count = result[0].count;
+		
+		if(count >= data.max_offers)
+		{
+			res.status(400).json({ result: 'error', error: "offers_limit_reached"});
+			return;
+		}
+
+		con.query(sql("INSERT INTO offer (active,from_user,value,fee,days,created_at,updated_at) VALUES ('$active','$from_user','$value','$fee','$days',NOW(),NOW()) ",{active: active,from_user: from_user,value: value,fee: fee,days: days}), function (err, result, fields)
+		{
+			if(err)
+			{
+				res.status(400).json({ result: 'error', error: err.code});
+				return;
+			}
+			else
+			{	
+				res.status(201).json({ result: 'success', id: result.insertId});
+				return;
+			}
+		});
+	});	
+});
+
+/*
+	List my active offers
+*/
+app.get('/offer/my_offers', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var from_user = data.get("user_id");
+
+	con.query(sql("SELECT * FROM offer WHERE from_user='$from_user' AND active=1 ",{from_user: from_user}), function (err, result, fields)
+	{
+		if(err)
+		{
+			res.status(400).json({ result: 'error', error: err.code});
 			return;
 		}
 		else
 		{
-			res.status(400).json({ result: 'error', error: "invalid_user"});
+			for(var i = 0; i < result.length; i ++)
+			{
+				result[i].created_at = fixDate(result[i].created_at);
+				result[i].updated_at = fixDate(result[i].updated_at);
+			}
+
+			res.status(201).json({ result: 'success', list: result});
 			return;
 		}
 	});
 });
-*/
-
-/*
-	Get user profile image
-	TO-DO in future
-*/
-/*
-app.post('/user/profileimage', function (req, res) 
-{
-	//Get data
-	var data = req.body;
-
-	//Get variables
-	var email = (data.email != null ? data.email : "");
-
-	con.query(sql("SELECT profileimage FROM user WHERE email = '$email'",{email: email}), function (err, result, fields) 
-	{
-		if(result.length > 0)
-		{
-			res.status(400).json({ result: 'success', data: result[0].profileimage});
-			return;
-		}
-		else
-		{
-			res.status(400).json({ result: 'error', error: "invalid_user"});
-			return;
-		}
-	});
-});
-*/
-
 
 /*
 	  ___           _   _     _           _   _                 _     _                 
@@ -421,6 +550,24 @@ app.listen(3000, function ()
 });
 
 /*
+
+*/
+
+/*
+	Variable helper
+*/
+Object.prototype.get = function(key)
+{
+	return this[key] == null ? "" : this[key].trim();
+}
+
+function fixDate(date)
+{
+	var jsDate = new Date(Date.parse((date + "").replace(/[-]/g,'/')));
+	return jsDate.toUTCString();
+}
+
+/*
 	Log message in console
 */
 function log(msg)
@@ -438,7 +585,8 @@ function sql(query,values)
 
 	for(let k in ks)
 	{
-		s = s.replace("$" + ks[k],values[ks[k]]);
+		s = s.split("$" + ks[k]).join(values[ks[k]]);
+		//s = s.replace("$" + ks[k],values[ks[k]]);
 	}
 
 	return s;
