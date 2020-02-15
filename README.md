@@ -7,6 +7,7 @@
 - MomentJS
 - MySQL
 - BCrypt
+- Request
 
 ### :fire: Progress
 
