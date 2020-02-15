@@ -563,8 +563,9 @@ Object.prototype.get = function(key)
 
 function fixDate(date)
 {
-	var jsDate = new Date(Date.parse((date + "").replace(/[-]/g,'/')));
-	return jsDate.toUTCString();
+	return date;
+	//var jsDate = new Date(Date.parse((date + "").replace(/[-]/g,'/')));
+	//return jsDate.toUTCString();
 }
 
 /*
