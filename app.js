@@ -668,18 +668,61 @@ app.post('/request/create', function (req, res)
 });
 
 /*
-	Delete an request
+	Get a request
 */
-app.post('/request/delete', function (req, res) 
+app.get('/request/get_request', function (req, res) 
 {
 	//Get data
 	var data = req.body;
 
-	var request_id = data.get("request_id");
+	var request = data.get("request");
+
+	con.query(sql("SELECT * FROM request WHERE id='$request'",{request: request}), function (err, result, fields)
+	{
+		if(err)
+		{
+			res.status(400).json({ result: 'error', error: "cant_get_request"});
+			return;
+		}
+
+		if(result.length == 0)
+		{
+			res.status(400).json({ result: 'error', error: "cant_get_request"});
+			return;
+		}
+
+		res.status(201).json({ result: 'success', data: result[0]});
+		return;
+	});
+
+});
+
+/*
+	Delete a request
+*/
+app.put('/request/delete', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var request_id = data.get("request");
 	var from_user = data.get("user_id");
 
-	con.query(sql("UPDAT request SET active=2 WHERE from_user='$from_user'",{from_user: from_user}), function (err, result, fields)
+	con.query(sql("UPDATE request SET active=2 WHERE from_user='$from_user' AND id='$request_id'",{from_user: from_user,request_id: request_id}), function (err, result, fields)
 	{
+		if(err)
+		{
+			res.status(400).json({ result: 'error', error: "cant_remove_request"});
+			return;
+		}
+
+		if(result.affectedRows == 0)
+		{
+			res.status(400).json({ result: 'error', error: "cant_remove_request"});
+			return;
+		}
+
+		res.status(201).json({ result: 'success'});
 	});
 
 });
@@ -792,6 +835,66 @@ app.post('/offer/create', function (req, res)
 });
 
 /*
+	Get an offer
+*/
+app.get('/offer/get_offer', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var offer = data.get("offer");
+
+	con.query(sql("SELECT * FROM offer WHERE id='$offer'",{offer: offer}), function (err, result, fields)
+	{
+		if(err)
+		{
+			res.status(400).json({ result: 'error', error: "cant_get_offer"});
+			return;
+		}
+
+		if(result.length == 0)
+		{
+			res.status(400).json({ result: 'error', error: "cant_get_offer"});
+			return;
+		}
+
+		res.status(201).json({ result: 'success', data: result[0]});
+		return;
+	});
+
+});
+
+/*
+	Delete an offer
+*/
+app.put('/offer/delete', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var offer_id = data.get("offer");
+	var from_user = data.get("user_id");
+
+	con.query(sql("UPDATE offer SET active=2 WHERE from_user='$from_user' AND id='$offer_id'",{from_user: from_user,offer_id: offer_id}), function (err, result, fields)
+	{
+		if(err)
+		{
+			res.status(400).json({ result: 'error', error: "cant_remove_offer"});
+			return;
+		}
+
+		if(result.affectedRows == 0)
+		{
+			res.status(400).json({ result: 'error', error: "cant_remove_offer"});
+			return;
+		}
+
+		res.status(201).json({ result: 'success'});
+	});
+
+});
+
+/*
 	List my active offers
 */
 app.get('/offer/my_offers', function (req, res) 
@@ -822,35 +925,7 @@ app.get('/offer/my_offers', function (req, res)
 	});
 });
 
-/*
-	Delete an request
-*/
-app.get('/offer/get_offer', function (req, res) 
-{
-	//Get data
-	var data = req.body;
 
-	var offer = data.get("offer");
-
-	con.query(sql("SELECT * FROM offer WHERE id='$offer'",{offer: offer}), function (err, result, fields)
-	{
-		if(err)
-		{
-			res.status(400).json({ result: 'error', error: "cant_get_offer"});
-			return;
-		}
-
-		if(result.length == 0)
-		{
-			res.status(400).json({ result: 'error', error: "cant_get_offer"});
-			return;
-		}
-
-		res.status(400).json({ result: 'success', data: result[0]});
-		return;
-	});
-
-});
 
 
 /*

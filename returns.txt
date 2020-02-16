@@ -172,7 +172,40 @@
 			{ result: 'error', error: ?}
 			
 			{ result: 'success', id: ?insert_id}
-			
+
+	- GET /request/get_request: [Needs Token]
+		- Input:
+			{
+				"request"
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_token"}
+			{ result: 'error', error: "cant_get_request"}
+
+			{
+		 		"result": "success",
+		  		"data": {
+		   			"id": 2,
+		    		"active": 1,
+				    "from_user": 29,
+				    "value": 13.54,
+				    "fee": 3,
+				    "days": 10,
+				    "created_at": "2020-02-15T17:27:34.000Z",
+				    "updated_at": "2020-02-15T17:27:34.000Z"
+		  		}
+			}	
+
+	- PUT /request/delete: [Needs Token]
+		- Input:
+			{
+				"request"
+			}	
+		- Returns:
+			{ result: 'error', error: "cant_remove_request"}
+
+			{ result: 'success'}
+
 	- GET /request/my_requests: [Needs Token]
 		- Input:
 			{
@@ -215,6 +248,39 @@
 			{ result: 'error', error: ?}
 			
 			{ result: 'success', id: ?insert_id}
+
+	- GET /offer/get_offer: [Needs Token]
+		- Input:
+			{
+				"offer"
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_token"}
+			{ result: 'error', error: "cant_get_offer"}
+
+			{
+		 		"result": "success",
+		  		"data": {
+		   			"id": 2,
+		    		"active": 1,
+				    "from_user": 29,
+				    "value": 13.54,
+				    "fee": 3,
+				    "days": 10,
+				    "created_at": "2020-02-15T17:27:34.000Z",
+				    "updated_at": "2020-02-15T17:27:34.000Z"
+		  		}
+			}		
+
+	- PUT /offer/delete: [Needs Token]
+		- Input:
+			{
+				"offer"
+			}	
+		- Returns:
+			{ result: 'error', error: "cant_remove_offer"}
+
+			{ result: 'success'}
 			
 	- GET /offer/my_offers: [Needs Token]
 		- Input:
@@ -240,29 +306,6 @@
 				...
 				]
 			}	
-
-	- GET /offer/get_offer: [Needs Token]
-		- Input:
-			{
-				"offer"
-			}
-		- Returns:
-			{ result: 'error', error: "invalid_token"}
-			{ result: 'error', error: "cant_get_offer"}
-
-			{
-		 		"result": "success",
-		  		"data": {
-		   			"id": 2,
-		    		"active": 1,
-				    "from_user": 29,
-				    "value": 13.54,
-				    "fee": 3,
-				    "days": 10,
-				    "created_at": "2020-02-15T17:27:34.000Z",
-				    "updated_at": "2020-02-15T17:27:34.000Z"
-		  		}
-			}		
 
 	- GET /offer/search: [Needs Token]
 		- Input:
