@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 14-Fev-2020 às 00:53
+-- Generation Time: 16-Fev-2020 às 23:20
 -- Versão do servidor: 10.1.31-MariaDB
 -- PHP Version: 7.2.4
 
@@ -25,36 +25,16 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `chat`
+-- Estrutura da tabela `offer`
 --
 
-CREATE TABLE `chat` (
+CREATE TABLE `offer` (
   `id` int(11) NOT NULL,
-  `user_1` int(11) NOT NULL,
-  `user_2` int(11) NOT NULL,
-  `created_at` int(11) NOT NULL,
-  `updated_at` int(11) NOT NULL,
-  `read_at_1` datetime NOT NULL,
-  `read_at_2` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Estrutura da tabela `lend`
---
-
-CREATE TABLE `lend` (
-  `id` int(11) NOT NULL,
+  `active` tinyint(1) NOT NULL,
   `from_user` int(11) NOT NULL,
-  `to_user` int(11) NOT NULL,
   `value` float NOT NULL,
   `fee` float NOT NULL,
-  `status` int(11) NOT NULL,
-  `installments` int(11) NOT NULL,
-  `start_pay_at` datetime NOT NULL,
-  `end_pay_at` datetime NOT NULL,
-  `approved` tinyint(1) NOT NULL,
+  `days` int(11) NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -62,16 +42,18 @@ CREATE TABLE `lend` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `message`
+-- Estrutura da tabela `request`
 --
 
-CREATE TABLE `message` (
+CREATE TABLE `request` (
   `id` int(11) NOT NULL,
-  `text` varchar(140) NOT NULL,
+  `active` tinyint(1) NOT NULL,
   `from_user` int(11) NOT NULL,
-  `to_user` int(11) NOT NULL,
-  `chat` int(11) NOT NULL,
-  `created_at` datetime NOT NULL
+  `value` float NOT NULL,
+  `fee` float NOT NULL,
+  `days` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -87,51 +69,39 @@ CREATE TABLE `user` (
   `cpf` varchar(11) NOT NULL,
   `password` varchar(64) NOT NULL,
   `token` varchar(32) DEFAULT NULL,
+  `reset_token` varchar(64) NOT NULL,
   `status` int(11) NOT NULL DEFAULT '0',
   `type` int(11) NOT NULL,
   `addr_country` varchar(32) NOT NULL,
   `addr_state` varchar(32) NOT NULL,
   `addr_city` varchar(32) NOT NULL,
   `addr_neighborhood` varchar(32) NOT NULL,
-  `addr_street` varchar(32) NOT NULL,
   `addr_cep` int(8) NOT NULL,
+  `addr_street` varchar(32) NOT NULL,
   `addr_number` int(8) NOT NULL,
   `addr_complement` varchar(32) NOT NULL,
   `rating` float NOT NULL,
-  `bio` varchar(140) NOT NULL,
-  `image` mediumblob NOT NULL,
+  `max_offers` int(11) NOT NULL,
+  `image` blob NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `last_login` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
--- Extraindo dados da tabela `user`
---
-
-INSERT INTO `user` (`id`, `name`, `email`, `cpf`, `password`, `token`, `status`, `type`, `addr_country`, `addr_state`, `addr_city`, `addr_neighborhood`, `addr_street`, `addr_cep`, `addr_number`, `addr_complement`, `rating`, `bio`, `image`, `created_at`, `updated_at`, `last_login`) VALUES
-(24, 'Antônio Anastasia', 'arnilsenarthur@gmail.com', '70317460609', '$2b$10$3DmockX7ILZA/6LlgbOAdu7nUmpjV1W6/aY18FJPLFnu7Cx7UIGXW', 'daFKVKurYgK0blHJSh1ax6PTcLE9HG', 1, 0, '', '', '', '', '', 0, 0, '', 0, '', '', '2020-02-12 19:14:40', '2020-02-12 21:11:06', '0000-00-00 00:00:00');
-
---
 -- Indexes for dumped tables
 --
 
 --
--- Indexes for table `chat`
+-- Indexes for table `offer`
 --
-ALTER TABLE `chat`
+ALTER TABLE `offer`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `lend`
+-- Indexes for table `request`
 --
-ALTER TABLE `lend`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `message`
---
-ALTER TABLE `message`
+ALTER TABLE `request`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -149,28 +119,22 @@ ALTER TABLE `user`
 --
 
 --
--- AUTO_INCREMENT for table `chat`
+-- AUTO_INCREMENT for table `offer`
 --
-ALTER TABLE `chat`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `offer`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT for table `lend`
+-- AUTO_INCREMENT for table `request`
 --
-ALTER TABLE `lend`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `message`
---
-ALTER TABLE `message`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `request`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
