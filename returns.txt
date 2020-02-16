@@ -239,7 +239,30 @@
 				},
 				...
 				]
-			}			
+			}	
+
+	- GET /offer/get_offer: [Needs Token]
+		- Input:
+			{
+				"offer"
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_token"}
+			{ result: 'error', error: "cant_get_offer"}
+
+			{
+		 		"result": "success",
+		  		"data": {
+		   			"id": 2,
+		    		"active": 1,
+				    "from_user": 29,
+				    "value": 13.54,
+				    "fee": 3,
+				    "days": 10,
+				    "created_at": "2020-02-15T17:27:34.000Z",
+				    "updated_at": "2020-02-15T17:27:34.000Z"
+		  		}
+			}		
 
 	- GET /offer/search: [Needs Token]
 		- Input:

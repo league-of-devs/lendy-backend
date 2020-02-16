@@ -326,7 +326,7 @@ app.put('/user/update_address', function (req, res)
 	        		return;
 	        	}
 
-	        	con.query(sql("UPDATE user SET addr_country='$addr_country',addr_state='$addr_state',addr_city='$addr_city',addr_neighborhood='$addr_neighborhood',addr_street='$addr_street',addr_number='$addr_number',addr_complement='$addr_complement',addr_cep='$addr_cep' WHERE id='$from_user'",{from_user: from_user,addr_country: addr_country,addr_state: addr_state,addr_city: addr_city,addr_neighborhood: addr_neighborhood,addr_cep: addr_cep,addr_street: addr_street,addr_number: addr_number,addr_complement: addr_complement}), function (errb, result, fields) 
+	        	con.query(sql("UPDATE user SET addr_country='$addr_country',addr_state='$addr_state',addr_city='$addr_city',addr_neighborhood='$addr_neighborhood',addr_street='$addr_street',addr_number='$addr_number',addr_complement='$addr_complement',addr_cep='$addr_cep', updated_at=NOW() WHERE id='$from_user'",{from_user: from_user,addr_country: addr_country,addr_state: addr_state,addr_city: addr_city,addr_neighborhood: addr_neighborhood,addr_cep: addr_cep,addr_street: addr_street,addr_number: addr_number,addr_complement: addr_complement}), function (errb, result, fields) 
 				{
 					if(errb)
 					{
@@ -396,7 +396,7 @@ app.put('/user/update_data', function (req, res)
 		return;
 	}
 
-	con.query(sql("UPDATE user SET email='$email',name='$name',cpf='$cpf' WHERE id='$id'",{cpf: cpf,email: email,name: name,id: user_id}), function (err, result, fields) 
+	con.query(sql("UPDATE user SET email='$email',name='$name',cpf='$cpf',updated_at=NOW() WHERE id='$id'",{cpf: cpf,email: email,name: name,id: user_id}), function (err, result, fields) 
 	{
 		if(err)
 		{
@@ -472,7 +472,7 @@ app.put('/user/update_password', function (req, res)
 							return;	
 						}
 
-						con.query(sql("UPDATE user SET password='$hash' WHERE id = '$user_id'",{user_id: user_id,hash: hash}), function (err, result, fields)
+						con.query(sql("UPDATE user SET password='$hash', updated_at=NOW() WHERE id = '$user_id'",{user_id: user_id,hash: hash}), function (err, result, fields)
 						{
 							if(err)
 							{
@@ -668,6 +668,23 @@ app.post('/request/create', function (req, res)
 });
 
 /*
+	Delete an request
+*/
+app.post('/request/delete', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var request_id = data.get("request_id");
+	var from_user = data.get("user_id");
+
+	con.query(sql("UPDAT request SET active=2 WHERE from_user='$from_user'",{from_user: from_user}), function (err, result, fields)
+	{
+	});
+
+});
+
+/*
 	List my active requests
 */
 app.get('/request/my_requests', function (req, res) 
@@ -804,6 +821,37 @@ app.get('/offer/my_offers', function (req, res)
 		}
 	});
 });
+
+/*
+	Delete an request
+*/
+app.get('/offer/get_offer', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var offer = data.get("offer");
+
+	con.query(sql("SELECT * FROM offer WHERE id='$offer'",{offer: offer}), function (err, result, fields)
+	{
+		if(err)
+		{
+			res.status(400).json({ result: 'error', error: "cant_get_offer"});
+			return;
+		}
+
+		if(result.length == 0)
+		{
+			res.status(400).json({ result: 'error', error: "cant_get_offer"});
+			return;
+		}
+
+		res.status(400).json({ result: 'success', data: result[0]});
+		return;
+	});
+
+});
+
 
 /*
 	Get offers for request
