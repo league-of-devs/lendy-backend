@@ -860,6 +860,15 @@ con.connect();
 */
 app.listen(3000, function () 
 {
+	log('----------------------------------------------------');
+	log('	  Lendy - 2020');
+	log(' ');
+	log('	- Árnilsen Arthur');
+	log('	- Daniel Oliveira');
+	log('	- Davi Rodrigues');
+	log('	- Pablo Henrique');
+	log('	- Rafael Freitas');
+	log('----------------------------------------------------');
 	log('Server listening on port 3000');
 });
 
@@ -872,7 +881,8 @@ app.listen(3000, function ()
 */
 Object.prototype.get = function(key)
 {
-	return this[key] == null ? "" : this[key].trim();
+	//Apply mysql injection protection
+	return this[key] == null ? "" : this[key].trim().split("'").join("").split("\"").join("");
 }
 
 function fixDate(date)
