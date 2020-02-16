@@ -105,14 +105,15 @@ app.use((req, res, next) =>
 			else
 			{
 				req.body.user_id = result[0].id + "";
+				req.body.token = token;
 				req.body.max_offers = result[0].max_offers + "";
 				
 				return next();
 			}
 		});
 	}
-
-	return;
+	else
+		return next();
 });
 
 /*      _   _                     
@@ -153,11 +154,23 @@ app.post('/user/register', function (req, res)
 	var max_offers = 5;
 	var image = "";
 
-	var regex = /^[a-zA-Z ]{2,30}$/;
+	var regex = /^[a-zA-Z ]{2,64}$/;
 
-	if(regex.test(name))
+	if(!regex.test(name))
 	{
 		res.status(400).json({ result: 'error', error: "invalid_name"});
+		return;
+	}
+
+	if(name.length > 64)
+	{
+		res.status(400).json({ result: 'error', error: "long_name"});
+		return;
+	}
+
+	if(name.length < 5)
+	{
+		res.status(400).json({ result: 'error', error: "short_name"});
 		return;
 	}
 
@@ -266,6 +279,223 @@ app.post('/user/register', function (req, res)
 	
 });
 
+
+/*
+	Update adress
+*/
+app.put('/user/update_address', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var addr_country = "";
+	var addr_state = "";
+	var addr_city = "";
+	var addr_neighborhood = "";
+	var addr_cep = data.get("addr_cep");
+	var addr_street = "";
+	var addr_number = data.get("addr_number");
+	var addr_complement = data.get("addr_complement");
+
+	var from_user = data.get("user_id");
+
+	request({
+    	url: "https://brasilapi.com.br/api/cep/" + addr_cep ,
+    	json: true
+	}, function (error, response, body) {
+
+	    if (!error && response.statusCode === 200) 
+	    {
+	        if(body.error == null)
+	        {
+	        	addr_country = "Brasil";
+	        	addr_state = body.state;
+	        	addr_street = body.street;
+	        	addr_city = body.city;
+	        	addr_neighborhood = body.neighborhood;
+
+	        	if(isNaN(addr_number) || addr_number == "")
+	        	{
+	        		res.status(400).json({ result: 'error', error: "invalid_address_number"});
+	        		return;
+	        	}
+  
+	        	if(addr_complement > 8)
+	        	{
+	        		res.status(400).json({ result: 'error', error: "invalid_complement"});
+	        		return;
+	        	}
+
+	        	con.query(sql("UPDATE user SET addr_country='$addr_country',addr_state='$addr_state',addr_city='$addr_city',addr_neighborhood='$addr_neighborhood',addr_street='$addr_street',addr_number='$addr_number',addr_complement='$addr_complement',addr_cep='$addr_cep' WHERE id='$from_user'",{from_user: from_user,addr_country: addr_country,addr_state: addr_state,addr_city: addr_city,addr_neighborhood: addr_neighborhood,addr_cep: addr_cep,addr_street: addr_street,addr_number: addr_number,addr_complement: addr_complement}), function (errb, result, fields) 
+				{
+					if(errb)
+					{
+						res.status(400).json({ result: 'error', error: error});
+						return;
+					}
+					else
+					{
+						res.status(201).json({ result: 'success'});
+						return;
+					}
+				});
+	        }
+	    }
+	    else
+	    {
+	    	res.status(400).json({ result: 'error', error: "invalid_cep"});
+	    	return;
+	    }
+	});
+});
+
+/*
+	Update user data
+*/
+app.put('/user/update_data', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var email = data.get("email");
+	var name = data.get("name"); 
+	var cpf = data.get("cpf");
+
+	var user_id = data.get("user_id");
+
+	var regex = /^[a-zA-Z ]{2,64}$/;
+
+	if(!regex.test(name))
+	{
+		res.status(400).json({ result: 'error', error: "invalid_name"});
+		return;
+	}
+
+	if(name.length > 64)
+	{
+		res.status(400).json({ result: 'error', error: "long_name"});
+		return;
+	}
+
+	if(name.length < 5)
+	{
+		res.status(400).json({ result: 'error', error: "short_name"});
+		return;
+	}
+
+	//Check data
+	if(!validateEmail(email))
+	{
+		res.status(400).json({ result: 'error', error: "invalid_email"});
+		return;
+	}
+
+	if(!validateCpf(cpf))
+	{
+		res.status(400).json({ result: 'error', error: "invalid_cpf"});
+		return;
+	}
+
+	con.query(sql("UPDATE user SET email='$email',name='$name',cpf='$cpf' WHERE id='$id'",{cpf: cpf,email: email,name: name,id: user_id}), function (err, result, fields) 
+	{
+		if(err)
+		{
+			con.query(sql("SELECT id FROM user WHERE email = '$email'",{email: email}), function (errb, result, fields) 
+			{
+				if(result.length > 0)
+				{
+					res.status(400).json({ result: 'error', error: "email_in_use"});
+					return;
+				}
+				else
+				{
+					con.query(sql("SELECT id FROM user WHERE cpf = '$cpf'",{cpf: cpf}), function (errb, result, fields) 
+					{
+						if(result.length > 0)
+						{
+							res.status(400).json({ result: 'error', error: "cpf_in_use"});
+							return;
+						}
+						else
+						{
+							res.status(400).json({ result: 'error', error: "cant_update"});
+							return;
+						}
+					});	
+				}
+			});	
+		}
+		else
+		{
+			res.status(200).json({ result: 'success'});
+			return;
+		}
+	});
+});
+
+/*
+	Change password
+*/
+app.put('/user/update_password', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var password = data.get("password");
+	var old_password = data.get("old_password");
+
+	var user_id = data.get("user_id");
+
+	if(password.length < 8)
+	{
+		res.status(400).json({ result: 'error', error: "short_password"});
+		return;
+	}
+
+	if(password.length > 24)
+	{
+		res.status(400).json({ result: 'error', error: "long_password"});
+	}
+
+	con.query(sql("SELECT id,password,status FROM user WHERE id = '$user_id'",{user_id: user_id}), function (err, result, fields)
+	{
+		if(result.length > 0)
+		{
+			bcrypt.compare(old_password, result[0].password, function(err, result) {
+				if(result)
+				{
+					bcrypt.hash(password, 10, function(err, hash) 
+					{
+						if(err)
+						{
+							res.status(400).json({ result: 'error', error: "cant_change_password"});
+							return;	
+						}
+
+						con.query(sql("UPDATE user SET password='$hash' WHERE id = '$user_id'",{user_id: user_id,hash: hash}), function (err, result, fields)
+						{
+							if(err)
+							{
+								res.status(400).json({ result: 'error', error: "cant_change_password"});
+								return;	
+							}
+
+							res.status(201).json({ result: 'success'});
+							return;
+						});
+					});
+						
+				}
+				else
+				{
+					res.status(400).json({ result: 'error', error: "wrong_old_password"});
+					return;	
+				}
+			});
+		}
+	});
+});
+
 /*
 	Login
 */
@@ -320,6 +550,61 @@ app.post('/user/login', function (req, res)
 			res.status(400).json({ result: 'error', error: "invalid_cpf"});
 			return;
 		}
+	});
+});
+
+/*
+	Get Own Info
+*/
+app.get('/user/my_info', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var user_id = data.get("user_id");
+	var token = data.get("token");
+
+	con.query(sql("SELECT id,name,email,cpf,status,type,addr_country,addr_state,addr_city,addr_neighborhood,addr_cep,addr_street,addr_number,addr_complement,rating,max_offers,image,created_at,updated_at,last_login FROM user WHERE id = '$id' AND token = '$token'",{id: user_id,token: token}), function (err, result, fields) 
+	{
+		if(!err)
+		{
+			if(result.length > 0)
+			{
+				res.status(201).json({ result: 'success', data: result[0]});
+				return;
+			}
+		}
+
+
+		res.status(400).json({ result: 'error', error: "invalid_token"});
+		return;
+	});
+});
+
+/*
+	Get another user info
+*/
+app.get('/user/user_info', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var id = data.get("id");
+
+	con.query(sql("SELECT id,name,email,cpf,status,type,addr_country,addr_state,addr_city,addr_neighborhood,addr_cep,addr_street,addr_number,addr_complement,rating,image,created_at FROM user WHERE id = '$id'",{id: id}), function (err, result, fields) 
+	{
+		if(!err)
+		{
+			if(result.length > 0)
+			{
+				res.status(201).json({ result: 'success', data: result[0]});
+				return;
+			}
+		}
+
+
+		res.status(400).json({ result: 'error', error: "invalid_user"});
+		return;
 	});
 });
 
