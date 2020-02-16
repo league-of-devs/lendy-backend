@@ -13,6 +13,8 @@
 			}
 		- Returns:
 			{ result: 'error', error: "invalid_name"}
+			{ result: 'error', error: "long_name"}
+			{ result: 'error', error: "short_name"}
 			{ result: 'error', error: "invalid_email"}
 			{ result: 'error', error: "invalid_cpf"}
 			{ result: 'error', error: "short_password"}
@@ -26,7 +28,7 @@
 			
 			{ result: 'success' }
 			
-	- POST /user/login:
+	- POST /user/login: 
 		- Input:
 			{
 				"cpf",
@@ -39,10 +41,124 @@
 			{ result: 'error', error: "invalid_cpf"}
 			
 			{ result: 'success', token: ?user_token}
+
+	- GET /user/my_info: [Needs Token]
+		-Input:
+			{
+			}
+		-Returns:
+			{ result: 'error', error: "invalid_token"}
+
+			{
+			  "result": "success",
+			  "data":{
+			      "id"
+			      "name"
+			      "email"
+			      "cpf"
+			      "status
+			      "type"
+			      "addr_country"
+			      "addr_state"
+			      "addr_city"
+			      "addr_neighborhood"
+			      "addr_cep"
+			      "addr_street"
+			      "addr_number"
+			      "addr_complement"
+			      "rating"
+			      "max_offers"
+			      "image"
+			      "created_at"
+			      "updated_at"
+			      "last_login"
+			    }
+			}
+
+	- GET /user/user_info: [Needs Token]
+		-Input:
+			{
+				"id"
+			}
+		-Returns:
+			{ result: 'error', error: "invalid_user"}
+			{ result: 'error', error: "invalid_token"}
+
+			{
+			  "result": "success",
+			  "data": {
+			    "id"
+			    "name"
+			    "email"
+			    "cpf"
+			    "status"
+			    "type"
+			    "addr_country"
+			    "addr_state"
+			    "addr_city"
+			    "addr_neighborhood"
+			    "addr_cep"
+			    "addr_street"
+			    "addr_number"
+			    "addr_complement"
+			    "rating"
+			    "image"
+			    "created_at"
+			  }
+			}
+
+	- PUT /user/update_password: [Needs Token]
+		-Input:
+			{
+				"password"
+				"old_password"
+			}
+		-Returns:
+			{ result: 'error', error: "invalid_token"}
+			{ result: 'error', error: "short_password"}
+			{ result: 'error', error: "long_password"}
+			{ result: 'error', error: "cant_change_password"}
+			{ result: 'error', error: "wrong_old_password"}
+
+			{ result: 'success'}
+
+	- PUT /user/update_data: [Needs Token]
+		-Input:
+			{
+				"email"
+				"name"
+				"cpf"
+			}
+		-Returns:
+			{ result: 'error', error: "invalid_name"}
+			{ result: 'error', error: "long_name"}
+			{ result: 'error', error: "short_name"}
+			{ result: 'error', error: "invalid_email"}
+			{ result: 'error', error: "invalid_cpf"}
+			{ result: 'error', error: "email_in_use"}
+			{ result: 'error', error: "cpf_in_use"}
+			{ result: 'error', error: ?}
+			
+			{ result: 'success' }
+
+	- PUT /user/update_address: [Needs Token]
+		-Input:
+			{
+				"addr_cep"
+				"addr_number"
+				"addr_complement"
+			}
+		-Returns:
+			{ result: 'error', error: "invalid_address_number"}
+			{ result: 'error', error: "invalid_complement"}
+			{ result: 'error', error: "invalid_cep"}
+			{ result: 'error', error: ?}
+			
+			{ result: 'success' }	
 		
 - Request:		
-	- POST /request/create:
-		- Input: [Needs Token]
+	- POST /request/create: [Needs Token]
+		- Input: 
 			{
 				"value",
 				"fee",
@@ -83,8 +199,8 @@
 			}
 
 - Offer:		
-	- POST /offer/create:
-		- Input: [Needs Token]
+	- POST /offer/create: [Needs Token]
+		- Input: 
 			{
 				"value",
 				"fee",
@@ -125,6 +241,42 @@
 				]
 			}			
 
+	- GET /offer/search: [Needs Token]
+		- Input:
+			{
+				"min_value",
+				"max_fee",
+				"min_days"
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_token"}
+			{ result: 'error', error: ?}
+
+			{
+			  "result": "success",
+			  "data": [
+			    {
+			      "id": 1,
+			      "active": 1,
+			      "from_user": 29,
+			      "value": 13.54,
+			      "fee": 3,
+			      "days": 10,
+			      "created_at": "2020-02-15T17:27:33.000Z",
+			      "updated_at": "2020-02-15T17:27:33.000Z"
+			    },
+			    {
+			      "id": 2,
+			      "active": 1,
+			      "from_user": 29,
+			      "value": 13.54,
+			      "fee": 3,
+			      "days": 10,
+			      "created_at": "2020-02-15T17:27:34.000Z",
+			      "updated_at": "2020-02-15T17:27:34.000Z"
+			    }
+			  ]
+			}
 	
 		
 			

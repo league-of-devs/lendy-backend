@@ -817,6 +817,20 @@ app.get('/offer/search', function (req, res)
 	var max_fee = data.get("max_fee");
 	var min_days = data.get("min_days");
 
+	var user_id = data.get("user_id");
+
+	con.query(sql("SELECT * FROM offer WHERE id!='$user_id' AND active=1 AND value>='$min_value' AND days>='$min_days' AND fee<='$max_fee' ",{min_value: min_value,user_id: user_id,min_days: min_days,max_fee: max_fee}), function (err, result, fields)
+	{
+		if(err)
+		{
+			res.status(400).json({ result: 'error', error: err.code});
+			return;
+		}
+
+		res.status(400).json({ result: 'success', data: result});
+		return;
+	});
+
 });
 
 
