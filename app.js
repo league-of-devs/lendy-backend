@@ -910,7 +910,7 @@ function sql(query,values)
 
 	for(let k in ks)
 	{
-		s = s.split("$" + ks[k]).join(values[ks[k]]);
+		s = s.split("'$" + ks[k] + "'").join("'" + values[ks[k]] + "'");
 		//s = s.replace("$" + ks[k],values[ks[k]]);
 	}
 
