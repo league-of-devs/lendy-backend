@@ -29,14 +29,14 @@
 	- POST /user/login:
 		- Input:
 			{
-				"email",
+				"cpf",
 				"password",
 			}
 		- Returns:	
 			{ result: 'error', error: "account_disabled"}
 			{ result: 'error', error: "cant_login"}
 			{ result: 'error', error: "wrong_password"}
-			{ result: 'error', error: "invalid_email"}
+			{ result: 'error', error: "invalid_cpf"}
 			
 			{ result: 'success', token: ?user_token}
 		

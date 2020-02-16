@@ -275,11 +275,11 @@ app.post('/user/login', function (req, res)
 	var data = req.body;
 
 	//Get variables
-	var email = (data.email != null ? data.email : "");
+	var cpf = (data.cpf != null ? data.cpf : "");
 	var password = (data.password != null ? data.password : "");
 
 	//Do query
-	con.query(sql("SELECT id,password,status FROM user WHERE email = '$email'",{email: email}), function (err, result, fields) 
+	con.query(sql("SELECT id,password,status FROM user WHERE cpf = '$cpf'",{cpf: cpf}), function (err, result, fields) 
 	{
 		if(result.length > 0)
 		{
@@ -294,7 +294,7 @@ app.post('/user/login', function (req, res)
 			    {
 			    	var token = generateToken(30);
 
-			    	con.query(sql("UPDATE user SET token= '$token',last_login = NOW() WHERE email = '$email'",{email: email,token: token}), function (err, result, fields)
+			    	con.query(sql("UPDATE user SET token= '$token',last_login = NOW() WHERE cpf = '$cpf'",{cpf: cpf,token: token}), function (err, result, fields)
 			    	{
 			    		if(err)
 			    		{
@@ -317,7 +317,7 @@ app.post('/user/login', function (req, res)
 		}
 		else
 		{
-			res.status(400).json({ result: 'error', error: "invalid_email"});
+			res.status(400).json({ result: 'error', error: "invalid_cpf"});
 			return;
 		}
 	});
@@ -519,6 +519,21 @@ app.get('/offer/my_offers', function (req, res)
 		}
 	});
 });
+
+/*
+	Get offers for request
+*/
+app.get('/offer/search', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var min_value = data.get("min_value");
+	var max_fee = data.get("max_fee");
+	var min_days = data.get("min_days");
+
+});
+
 
 /*
 	  ___           _   _     _           _   _                 _     _                 
