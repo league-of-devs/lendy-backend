@@ -11,8 +11,8 @@
 
 ### :fire: Progress
 
-- [ ] Users CRUD
-- [ ] Authentication middleware
+- [X] Users CRUD
+- [X] Authentication middleware
 
 ### :page_facing_up: About
 
