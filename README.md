@@ -14,11 +14,26 @@
 - [X] Users CRUD
 - [X] Authentication middleware
 
-### :page_facing_up: About
+### :page_facing_up: Routes
 
-- Sign-Up
-  - Email validation
-  - Cpf validation
+- POST /user/register
+- POST /user/login
+- GET /user/my_info [TOKEN]
+- GET /user/user_info [TOKEN]
+- PUT /user/update_password [TOKEN]
+- PUT /user/update_data [TOKEN]
+- PUT /user/update_address [TOKEN]
+
+- POST /request/create [TOKEN]
+- GET /request/get_request [TOKEN]
+- PUT /request/delete [TOKEN]
+- GET /request/my_requests [TOKEN]
+
+- POST /offer/create [TOKEN]
+- GET /offer/get_offer [TOKEN]
+- PUT /offer/delete [TOKEN]
+- GET /offer/my_offers [TOKEN]
+- GET /offer/search [TOKEN]
 
 ### :question: Questions
 
