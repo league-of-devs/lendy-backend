@@ -37,6 +37,7 @@ var bcrypt = require('bcrypt');
 require('dotenv').config();
 var nodemailer = require('nodemailer');
 var request = require("request")
+var cors = require("cors");
 
 /*
 	Main variables
@@ -69,6 +70,7 @@ var mailtransporter = nodemailer.createTransport({
 	Main middleware
 */
 app.use(express.json())
+app.use(cors())
 
 /*
 	Main route
