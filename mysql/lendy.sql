@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 17-Fev-2020 às 12:13
+-- Generation Time: 18-Fev-2020 às 04:31
 -- Versão do servidor: 10.1.31-MariaDB
 -- PHP Version: 7.2.4
 
@@ -69,7 +69,7 @@ CREATE TABLE `user` (
   `cpf` varchar(11) NOT NULL,
   `password` varchar(64) NOT NULL,
   `token` varchar(32) DEFAULT NULL,
-  `reset_token` varchar(64) NOT NULL,
+  `reset_token` varchar(64) DEFAULT NULL,
   `status` int(11) NOT NULL DEFAULT '0',
   `type` int(11) NOT NULL,
   `addr_country` varchar(32) NOT NULL,
