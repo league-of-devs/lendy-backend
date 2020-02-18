@@ -666,11 +666,12 @@ app.post('/request/create', function (req, res)
 	}
 
 
-	con.query(sql("SELECT COUNT(id) AS count FROM request WHERE from_user=$from_user AND active = 1",{from_user: from_user}), function (err, result, fields){
+	con.query(sql("SELECT COUNT(id) AS count FROM request WHERE from_user='$from_user' AND active = 1",{from_user: from_user}), function (err, result, fields){
 		
 		if(err)
 		{
-			res.status(400).json({ result: 'error', error: err.code});
+			res.status(400).json({ result: 'error', error: err});
+
 			return;
 		}
 
@@ -833,7 +834,7 @@ app.post('/offer/create', function (req, res)
 	}
 
 	//Count active requests of user
-	con.query(sql("SELECT COUNT(id) AS count FROM offer WHERE from_user=$from_user AND active = 1",{from_user: from_user}), function (err, result, fields){
+	con.query(sql("SELECT COUNT(id) AS count FROM offer WHERE from_user='$from_user' AND active = 1",{from_user: from_user}), function (err, result, fields){
 		
 		if(err)
 		{
