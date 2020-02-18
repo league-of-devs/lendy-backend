@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 18-Fev-2020 às 04:31
+-- Generation Time: 18-Fev-2020 às 05:10
 -- Versão do servidor: 10.1.31-MariaDB
 -- PHP Version: 7.2.4
 
@@ -64,28 +64,28 @@ CREATE TABLE `request` (
 
 CREATE TABLE `user` (
   `id` int(11) NOT NULL,
-  `name` varchar(64) NOT NULL,
-  `email` varchar(64) NOT NULL,
-  `cpf` varchar(11) NOT NULL,
-  `password` varchar(64) NOT NULL,
+  `name` varchar(64) DEFAULT NULL,
+  `email` varchar(64) DEFAULT NULL,
+  `cpf` varchar(11) DEFAULT NULL,
+  `password` varchar(64) DEFAULT NULL,
   `token` varchar(32) DEFAULT NULL,
   `reset_token` varchar(64) DEFAULT NULL,
-  `status` int(11) NOT NULL DEFAULT '0',
-  `type` int(11) NOT NULL,
-  `addr_country` varchar(32) NOT NULL,
-  `addr_state` varchar(32) NOT NULL,
-  `addr_city` varchar(32) NOT NULL,
-  `addr_neighborhood` varchar(32) NOT NULL,
-  `addr_cep` int(8) NOT NULL,
-  `addr_street` varchar(32) NOT NULL,
-  `addr_number` int(8) NOT NULL,
-  `addr_complement` varchar(32) NOT NULL,
-  `rating` float NOT NULL,
-  `max_offers` int(11) NOT NULL,
-  `image` blob NOT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL,
-  `last_login` datetime NOT NULL
+  `status` int(11) DEFAULT '0',
+  `type` int(11) DEFAULT NULL,
+  `addr_country` varchar(32) DEFAULT NULL,
+  `addr_state` varchar(32) DEFAULT NULL,
+  `addr_city` varchar(32) DEFAULT NULL,
+  `addr_neighborhood` varchar(32) DEFAULT NULL,
+  `addr_cep` int(8) DEFAULT NULL,
+  `addr_street` varchar(32) DEFAULT NULL,
+  `addr_number` int(8) DEFAULT NULL,
+  `addr_complement` varchar(32) DEFAULT NULL,
+  `rating` float DEFAULT NULL,
+  `max_offers` int(11) DEFAULT NULL,
+  `image` blob,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `last_login` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -109,9 +109,9 @@ ALTER TABLE `request`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`),
   ADD UNIQUE KEY `cpf` (`cpf`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `id` (`id`),
   ADD UNIQUE KEY `email_2` (`email`,`cpf`);
 
 --
