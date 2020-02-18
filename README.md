@@ -35,6 +35,10 @@
 - GET /offer/my_offers [TOKEN]
 - GET /offer/search [TOKEN]
 
+- GET /wallet/get_money [TOKEN]
+- GET /wallet/deposit [TOKEN]
+- GET /wallet/withdraw [TOKEN]
+
 ### :question: Questions
 
 - None
