@@ -7,7 +7,7 @@
 				"name",
 				"cpf",
 				"password",
-				"cep",
+				"addr_cep",
 				"addr_number",
 				"addr_complement",
 			}
