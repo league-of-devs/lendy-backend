@@ -81,7 +81,7 @@ app.use((req, res, next) =>
 	log(ip + " requesting " + req.path);
 
 	//Validate token
-	if(req.path != "/user/register" && req.path != "user/login")
+	if(req.path != "/user/register" && req.path != "/user/login")
 	{
 		var token = req.headers.get('authorization');
 
