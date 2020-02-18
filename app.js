@@ -107,7 +107,7 @@ app.use((req, res, next) =>
 			else
 			{
 				req.body.user_id = result[0].id + "";
-				req.body.token = token;
+				req.body.tokien = token;
 				req.body.max_offers = result[0].max_offers + "";
 				
 				return next();
@@ -575,9 +575,9 @@ app.get('/user/my_info', function (req, res)
 	var data = req.body;
 
 	var user_id = data.get("user_id");
-	var token = data.get("token");
+	var token = data.get("tokien");
 
-	con.query(sql("SELECT id,name,email,cpf,status,type,addr_country,addr_state,addr_city,addr_neighborhood,addr_cep,addr_street,addr_number,addr_complement,rating,max_offers,image,created_at,updated_at,last_login FROM user WHERE id = '$id' AND token = '$token'",{id: user_id,token: token}), function (err, result, fields) 
+	con.query(sql("SELECT id,name,email,cpf,status,type,addr_country,addr_state,addr_city,addr_neighborhood,addr_cep,addr_street,addr_number,addr_complement,rating,max_offers,image,created_at,updated_at,last_login FROM user WHERE id = '$id'",{id: user_id,token: token}), function (err, result, fields) 
 	{
 		if(!err)
 		{
