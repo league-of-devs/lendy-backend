@@ -667,7 +667,7 @@ app.post('/request/create', function (req, res)
 
 
 	con.query(sql("SELECT COUNT(id) AS count FROM request WHERE from_user='$from_user' AND active = 1",{from_user: from_user}), function (err, result, fields){
-		
+		console.log(result[0].count);
 		if(err)
 		{
 			res.status(400).json({ result: 'error', error: err});
@@ -678,7 +678,7 @@ app.post('/request/create', function (req, res)
 		//Created offers
 		var count = result[0].count;
 		
-		if(count >= data.max_requests)
+		if(count >= max_requests)
 		{
 			res.status(400).json({ result: 'error', error: "requests_limit_reached"});
 			return;
