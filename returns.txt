@@ -343,6 +343,42 @@
 			    }
 			  ]
 			}
-	
+
+- Wallet:
+	- GET /wallet/get_money: [Needs Token]
+		- Input: 
+			{
+				"user"
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_wallet"}
+			{ result: 'error', error: ?}
+			
+			{ result: 'success', money: ?}
+
+	- POST /wallet/deposit: [Needs Token]
+		- Input: 
+			{
+				"user"
+				"amount",
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_amount"}
+			{ result: 'error', error: ?}
+			
+			{ result: 'success'}
+
+	- POST /wallet/withdraw: [Needs Token]
+		- Input: 
+			{
+				"user"
+				"amount",
+			}
+		- Returns:
+			{ result: 'error', error: "invalid_amount"}
+			{ result: 'error', error: ?}
+			
+			{ result: 'success'}
+
 		
 			

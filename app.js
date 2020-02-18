@@ -263,9 +263,20 @@ app.post('/user/register', function (req, res)
 							});	
 						}
 						else
-						{			
-							res.status(201).json({ result: 'success' });
-							return;
+						{	
+							con.query(sql("INSERT INTO wallet VALUES (NULL,'$user_id','0')",{user_id: result.insertId}), function (errb, result, fields) 
+							{
+								if(err)
+								{
+									res.status(400).json({ result: 'error', error: err});
+									return;
+								}
+								else
+								{
+									res.status(201).json({ result: 'success' });
+									return;
+								}
+							});
 						}
 					});
 				});
@@ -956,6 +967,102 @@ app.get('/offer/search', function (req, res)
 		return;
 	});
 
+});
+
+/*
+ __        __          _   _          _   
+ \ \      / /   __ _  | | | |   ___  | |_ 
+  \ \ /\ / /   / _` | | | | |  / _ \ | __|
+   \ V  V /   | (_| | | | | | |  __/ | |_ 
+    \_/\_/     \__,_| |_| |_|  \___|  \__|                                         
+*/
+/*
+	Get wallet money
+*/
+app.get('/wallet/get_money', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var user = data.get("user");
+
+	con.query(sql("SELECT money FROM wallet WHERE user_id='$user'",{user: user}), function (err, result, fields)
+	{
+		if(err)
+		{
+			res.status(400).json({ result: 'error', error: err.code});
+			return;
+		}
+
+		if(result.length == 0)
+		{
+			res.status(400).json({ result: 'error', error: "invalid_wallet"});
+			return;
+		}
+
+		res.status(201).json({ result: 'success', money: result[0].money});
+		return;
+	});
+});
+
+/*
+	Deposit money
+*/
+app.post('/wallet/deposit', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var user = data.get("user");
+	var amount = data.get("amount");
+
+	if(amount == "" || isNaN(amount))
+	{
+		res.status(400).json({ result: 'error', error: "invalid_amount"});
+		return;
+	}
+
+	con.query(sql("UPDATE wallet SET money = money + " + amount + " WHERE user_id='$user'",{user: user}), function (err, result, fields)
+	{
+		if(err)
+		{
+			res.status(400).json({ result: 'error', error: err.code});
+			return;
+		}
+
+		res.status(201).json({ result: 'success'});
+		return;
+	});
+});
+
+/*
+	Withdraw money
+*/
+app.post('/wallet/withdraw', function (req, res) 
+{
+	//Get data
+	var data = req.body;
+
+	var user = data.get("user");
+	var amount = data.get("amount");
+
+	if(amount == "" || isNaN(amount))
+	{
+		res.status(400).json({ result: 'error', error: "invalid_amount"});
+		return;
+	}
+
+	con.query(sql("UPDATE wallet SET money = money - " + amount + " WHERE user_id='$user'",{user: user}), function (err, result, fields)
+	{
+		if(err)
+		{
+			res.status(400).json({ result: 'error', error: err.code});
+			return;
+		}
+
+		res.status(201).json({ result: 'success'});
+		return;
+	});
 });
 
 
