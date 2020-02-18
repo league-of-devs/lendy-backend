@@ -645,6 +645,8 @@ app.post('/request/create', function (req, res)
 
 	var from_user = data.get("user_id");
 
+	var max_requests = 1;
+
 	if(value == "" || isNaN(value))
 	{
 		res.status(400).json({ result: 'error', error: "invalid_value"});
@@ -664,20 +666,37 @@ app.post('/request/create', function (req, res)
 	}
 
 
-	con.query(sql("INSERT INTO request (active,from_user,value,fee,days,created_at,updated_at) VALUES ('$active','$from_user','$value','$fee','$days',NOW(),NOW()) ",{active: active,from_user: from_user,value: value,fee: fee,days: days}), function (err, result, fields)
-	{
+	con.query(sql("SELECT COUNT(id) AS count FROM request WHERE from_user=$from_user AND active = 1",{from_user: from_user}), function (err, result, fields){
+		
 		if(err)
 		{
 			res.status(400).json({ result: 'error', error: err.code});
 			return;
 		}
-		else
-		{	
-			res.status(201).json({ result: 'success', id: result.insertId});
+
+		//Created offers
+		var count = result[0].count;
+		
+		if(count >= data.max_requests)
+		{
+			res.status(400).json({ result: 'error', error: "requests_limit_reached"});
 			return;
 		}
-	});
-	
+
+		con.query(sql("INSERT INTO request (active,from_user,value,fee,days,created_at,updated_at) VALUES ('$active','$from_user','$value','$fee','$days',NOW(),NOW()) ",{active: active,from_user: from_user,value: value,fee: fee,days: days}), function (err, result, fields)
+		{
+			if(err)
+			{
+				res.status(400).json({ result: 'error', error: err.code});
+				return;
+			}
+			else
+			{	
+				res.status(201).json({ result: 'success', id: result.insertId});
+				return;
+			}
+		});
+	});		
 });
 
 /*
